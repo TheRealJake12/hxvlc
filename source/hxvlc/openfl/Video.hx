@@ -7,56 +7,21 @@ import haxe.io.BytesData;
 import haxe.io.Path;
 import haxe.Exception;
 import haxe.Int64;
+import hxvlc.libvlc.Handle;
 import hxvlc.libvlc.LibVLC;
 import hxvlc.libvlc.Types;
-import hxvlc.util.Define;
 import lime.app.Event;
 import lime.utils.Log;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display3D.textures.Texture;
-#if linux
-import sys.FileSystem;
-#end
+import openfl.Lib;
 
 using StringTools;
 
-#if android
-@:headerInclude('android/log.h')
-#end
 @:headerInclude('assert.h')
-@:headerInclude('stdarg.h')
 @:headerInclude('stdio.h')
 @:cppNamespaceCode('
-static void logging(void *data, int level, const libvlc_log_t *ctx, const char *fmt, va_list args)
-{
-	#if defined(HX_ANDROID)
-	switch (level)
-	{
-		case LIBVLC_DEBUG:
-			__android_log_vprint(ANDROID_LOG_DEBUG, "HXVLC", fmt, args);
-			break;
-		case LIBVLC_NOTICE:
-			__android_log_vprint(ANDROID_LOG_INFO, "HXVLC", fmt, args);
-			break;
-		case LIBVLC_WARNING:
-			__android_log_vprint(ANDROID_LOG_WARN, "HXVLC", fmt, args);
-			break;
-		case LIBVLC_ERROR:
-			__android_log_vprint(ANDROID_LOG_ERROR, "HXVLC", fmt, args);
-			break;
-	}
-	#else
-	char buffer[1024] = { 0 };
-
-	strcpy(buffer, fmt);
-
-	strcat(buffer, "\\n");
-
-	vprintf(buffer, args);
-	#endif
-}
-
 static void *lock(void *opaque, void **planes)
 {
 	Video_obj *self = reinterpret_cast<Video_obj *>(opaque);
@@ -136,60 +101,61 @@ static void callbacks(const libvlc_event_t *p_event, void *p_data)
 			break;
 	}
 }')
+@:access(hxvlc.libvlc.Handle)
 class Video extends Bitmap
 {
 	/**
-	 * The video format width, in pixels.
+	 * The format width, in pixels.
 	 */
 	public var formatWidth(default, null):Int = 0;
 
 	/**
-	 * The video format height, in pixels.
+	 * The format height, in pixels.
 	 */
 	public var formatHeight(default, null):Int = 0;
 
 	/**
-	 * The video's time in milliseconds.
+	 * The media player's time in milliseconds.
 	 */
 	public var time(get, set):Int64;
 
 	/**
-	 * The video's position as percentage between `0.0` and `1.0`.
+	 * The media player's position as percentage between `0.0` and `1.0`.
 	 */
 	public var position(get, set):Single;
 
 	/**
-	 * The video's chapter.
+	 * The media player's chapter.
 	 */
 	public var chapter(get, set):Int;
 
 	/**
-	 * The video's chapter count.
+	 * The media player's chapter count.
 	 */
 	public var chapterCount(get, never):Int;
 
 	/**
-	 * The video's length in milliseconds.
+	 * The media player's length in milliseconds.
 	 */
 	public var length(get, never):Int64;
 
 	/**
-	 * The video's duration.
+	 * The media's duration.
 	 */
 	public var duration(get, never):Int64;
 
 	/**
-	 * The video's media resource locator.
+	 * The media resource locator.
 	 */
 	public var mrl(get, never):String;
 
 	/**
-	 * The video's audio volume in percents (0 = mute, 100 = nominal / 0dB).
+	 * The audio volume in percents (0 = mute, 100 = nominal / 0dB).
 	 */
 	public var volume(get, set):Int;
 
 	/**
-	 * The video's audio channel.
+	 * The audio channel.
 	 *
 	 * - [Stereo] = 1
 	 * - [RStereo] = 2
@@ -200,72 +166,72 @@ class Video extends Bitmap
 	public var channel(get, set):Int;
 
 	/**
-	 * The video's audio delay in microseconds.
+	 * The audio delay in microseconds.
 	 */
 	public var delay(get, set):Int64;
 
 	/**
-	 * The video's play rate.
+	 * The media player's play rate.
 	 */
 	public var rate(get, set):Single;
 
 	/**
-	 * Whether the video is playing or not.
+	 * Whether the media player is playing or not.
 	 */
 	public var isPlaying(get, never):Bool;
 
 	/**
-	 * Whether the video is seekable or not.
+	 * Whether the media player is seekable or not.
 	 */
 	public var isSeekable(get, never):Bool;
 
 	/**
-	 * Whether the video can be paused or not.
+	 * Whether the media player can be paused or not.
 	 */
 	public var canPause(get, never):Bool;
 
 	/**
-	 * Whether the video is able to play.
+	 * Whether the media player is able to play.
 	 */
 	public var willPlay(get, never):Bool;
 
 	/**
-	 * The video's mute status.
+	 * The audio's mute status.
 	 */
 	public var mute(get, set):Bool;
 
 	/**
-	 * The video's role.
+	 * The media player's role.
 	 */
 	public var role(get, set):UInt;
 
 	/**
-	 * An event that is dispatched when the video is opening.
+	 * An event that is dispatched when the media player is opening.
 	 */
 	public var onOpening(default, null):Event<Void->Void>;
 
 	/**
-	 * An event that is dispatched when the video is playing.
+	 * An event that is dispatched when the media player is playing.
 	 */
 	public var onPlaying(default, null):Event<Void->Void>;
 
 	/**
-	 * An event that is dispatched when the video stopped.
+	 * An event that is dispatched when the media player stopped.
 	 */
 	public var onStopped(default, null):Event<Void->Void>;
 
 	/**
-	 * An event that is dispatched when the video is paused.
+	 * An event that is dispatched when the media player is paused.
 	 */
 	public var onPaused(default, null):Event<Void->Void>;
 
 	/**
-	 * An event that is dispatched when the video reached the end.
+	 * An event that is dispatched when the media player reached the end.
 	 */
 	public var onEndReached(default, null):Event<Void->Void>;
 
 	/**
-	 * An event that is dispatched when the video encountered an error.
+	 * An event that is dispatched when the media player encountered an error.
 	 */
 	public var onEncounteredError(default, null):Event<String->Void>;
 
@@ -280,24 +246,22 @@ class Video extends Bitmap
 	public var onFormatSetup(default, null):Event<Void->Void>;
 
 	/**
-	 * An event that is dispatched when the video is being displayed.
+	 * An event that is dispatched when the media is being displayed.
 	 */
 	public var onDisplay(default, null):Event<Void->Void>;
-
-	@:noCompletion private static var instance:cpp.RawPointer<LibVLC_Instance_T>;
 
 	@:noCompletion private var mediaItem:cpp.RawPointer<LibVLC_Media_T>;
 	@:noCompletion private var mediaPlayer:cpp.RawPointer<LibVLC_MediaPlayer_T>;
 	@:noCompletion private var eventManager:cpp.RawPointer<LibVLC_EventManager_T>;
 
-	@:noCompletion private var events:Array<Bool>;
+	@:noCompletion private var events:Array<Bool> = [false, false, false, false, false, false, false, false, false];
 	@:noCompletion private var planes:cpp.RawPointer<cpp.UInt8>;
 	@:noCompletion private var texture:Texture;
 
 	/**
 	 * Initializes a Video object.
 	 *
-	 * @param smoothing Whether or not the video is smoothed when scaled.
+	 * @param smoothing Whether or not the object is smoothed when scaled.
 	 */
 	public function new(smoothing:Bool = true):Void
 	{
@@ -313,38 +277,38 @@ class Video extends Bitmap
 		onFormatSetup = new Event<Void->Void>();
 		onDisplay = new Event<Void->Void>();
 
-		events = new Array<Bool>();
+		while (Handle.loadingInstance)
+			Sys.sleep(0.05);
 
-		for (i in 0...8)
-			events[i] = false;
-
-		initInstance();
+		Handle.init();
 	}
 
 	/**
-	 * Call this function to load a video.
+	 * Call this function to load a media.
 	 *
 	 * @param location The local filesystem path or the media location url.
-	 * @param repeat The number of times the video should repeat itself.
 	 * @param options The additional options you can add to the LibVLC Media instance.
 	 *
-	 * @return `true` if the video loaded successfully or `false` if there's an error.
+	 * @return `true` if the media loaded successfully or `false` if there's an error.
 	 */
-	public function load(location:String, repeat:UInt = 0, ?options:Array<String>):Bool
+	public function load(location:String, ?options:Array<String>):Bool
 	{
-		if (instance == null)
+		if (Handle.instance == null)
 			return false;
+
+		if (options == null)
+			options = new Array<String>();
 
 		if (location != null && location.length > 0)
 		{
 			if (location.contains('://'))
-				mediaItem = LibVLC.media_new_location(instance, location);
+				mediaItem = LibVLC.media_new_location(Handle.instance, location);
 			else
 			{
 				#if windows
-				mediaItem = LibVLC.media_new_path(instance, Path.normalize(location).split('/').join('\\'));
+				mediaItem = LibVLC.media_new_path(Handle.instance, Path.normalize(location).split('/').join('\\'));
 				#else
-				mediaItem = LibVLC.media_new_path(instance, Path.normalize(location));
+				mediaItem = LibVLC.media_new_path(Handle.instance, Path.normalize(location));
 				#end
 			}
 		}
@@ -353,15 +317,17 @@ class Video extends Bitmap
 
 		if (mediaPlayer == null)
 		{
-			mediaPlayer = LibVLC.media_player_new(instance);
+			mediaPlayer = LibVLC.media_player_new(Handle.instance);
 
 			if (eventManager == null)
 			{
 				eventManager = LibVLC.media_player_event_manager(mediaPlayer);
 
+				Lib.current.addEventListener(openfl.events.Event.ENTER_FRAME, this_onEnterFrame);
+
 				if (LibVLC.event_attach(eventManager, LibVLC_MediaPlayerOpening, untyped __cpp__('callbacks'), untyped __cpp__('this')) != 0)
 					Log.warn('Failed to attach event (MediaPlayerOpening)');
-	
+
 				if (LibVLC.event_attach(eventManager, LibVLC_MediaPlayerPlaying, untyped __cpp__('callbacks'), untyped __cpp__('this')) != 0)
 					Log.warn('Failed to attach event (MediaPlayerPlaying)');
 
@@ -380,32 +346,23 @@ class Video extends Bitmap
 				if (LibVLC.event_attach(eventManager, LibVLC_MediaPlayerMediaChanged, untyped __cpp__('callbacks'), untyped __cpp__('this')) != 0)
 					Log.warn('Failed to attach event (MediaPlayerMediaChanged)');
 			}
-		}
 
-		if (options == null)
-			options = new Array<String>();
+			LibVLC.video_set_callbacks(mediaPlayer, untyped __cpp__('lock'), untyped __cpp__('unlock'), untyped __cpp__('display'), untyped __cpp__('this'));
+			LibVLC.video_set_format_callbacks(mediaPlayer, untyped __cpp__('format_setup'), untyped __cpp__('NULL'));
+		}
 
 		for (option in options)
-		{
-			// Don't override our repeat function.
-			if (!option.contains('input-repeat='))
-				LibVLC.media_add_option(mediaItem, option);
-		}
+			LibVLC.media_add_option(mediaItem, option);
 
-		LibVLC.media_add_option(mediaItem, "input-repeat=" + Math.min(repeat, 65535));
 		LibVLC.media_player_set_media(mediaPlayer, mediaItem);
-		LibVLC.media_release(mediaItem);
-
-		LibVLC.video_set_format_callbacks(mediaPlayer, untyped __cpp__('format_setup'), untyped __cpp__('NULL'));
-		LibVLC.video_set_callbacks(mediaPlayer, untyped __cpp__('lock'), untyped __cpp__('unlock'), untyped __cpp__('display'), untyped __cpp__('this'));
 
 		return true;
 	}
 
 	/**
-	 * Call this function to play a video.
+	 * Call this function to play a media player.
 	 *
-	 * @return `true` if the video started playing or `false` if there's an error.
+	 * @return `true` if the media player started playing or `false` if there's an error.
 	 */
 	public function play():Bool
 	{
@@ -416,7 +373,7 @@ class Video extends Bitmap
 	}
 
 	/**
-	 * Call this function to stop the video.
+	 * Call this function to stop the media player.
 	 */
 	public function stop():Void
 	{
@@ -425,7 +382,7 @@ class Video extends Bitmap
 	}
 
 	/**
-	 * Call this function to pause the video.
+	 * Call this function to pause the media player.
 	 */
 	public function pause():Void
 	{
@@ -434,7 +391,7 @@ class Video extends Bitmap
 	}
 
 	/**
-	 * Call this function to resume the video.
+	 * Call this function to resume the media player.
 	 */
 	public function resume():Void
 	{
@@ -443,7 +400,7 @@ class Video extends Bitmap
 	}
 
 	/**
-	 * Call this function to toggle the pause of the video.
+	 * Call this function to toggle the pause of the media player.
 	 */
 	public function togglePaused():Void
 	{
@@ -465,15 +422,18 @@ class Video extends Bitmap
 			LibVLC.event_detach(eventManager, LibVLC_MediaPlayerEndReached, untyped __cpp__('callbacks'), untyped __cpp__('this'));
 			LibVLC.event_detach(eventManager, LibVLC_MediaPlayerEncounteredError, untyped __cpp__('callbacks'), untyped __cpp__('this'));
 			LibVLC.event_detach(eventManager, LibVLC_MediaPlayerMediaChanged, untyped __cpp__('callbacks'), untyped __cpp__('this'));
-		}
 
-		events.splice(0, events.length);
+			Lib.current.removeEventListener(openfl.events.Event.ENTER_FRAME, this_onEnterFrame);
+		}
 
 		if (mediaPlayer != null)
 		{
 			LibVLC.media_player_stop(mediaPlayer);
 			LibVLC.media_player_release(mediaPlayer);
 		}
+
+		if (mediaItem != null)
+			LibVLC.media_release(mediaItem);
 
 		if (bitmapData != null)
 		{
@@ -495,93 +455,6 @@ class Video extends Bitmap
 		eventManager = null;
 		mediaPlayer = null;
 		mediaItem = null;
-	}
-
-	/**
-	 * Initialize LibVLC instance.
-	 *
-	 * @return `true` if the instance created successfully or `false` if there's an error.
-	 */
-	public static function initInstance():Bool
-	{
-		if (instance == null)
-		{
-			#if (windows || macos)
-			Sys.putEnv('VLC_PLUGIN_PATH', Path.join([Path.directory(Sys.programPath()), 'plugins']));
-			#elseif linux
-			final pluginsPath:String = '/usr/local/lib/vlc/plugins';
-
-			if (FileSystem.exists(pluginsPath) && FileSystem.isDirectory(pluginsPath))
-				Sys.putEnv('VLC_PLUGIN_PATH', pluginsPath);
-			else if (FileSystem.exists(pluginsPath.replace('local/', '')) && FileSystem.isDirectory(pluginsPath.replace('local/', '')))
-				Sys.putEnv('VLC_PLUGIN_PATH', pluginsPath.replace('local/', ''));
-			#end
-
-			var args:cpp.StdVectorConstCharStar = cpp.StdVectorConstCharStar.alloc();
-
-			args.push_back("--drop-late-frames");
-			args.push_back("--intf=dummy");
-			args.push_back("--no-interact");
-			args.push_back("--no-lua");
-			args.push_back("--no-snapshot-preview");
-			args.push_back("--no-spu");
-			args.push_back("--no-stats");
-			args.push_back("--no-sub-autodetect-file");
-			args.push_back("--no-video-title-show");
-			args.push_back("--no-xlib");
-			#if (windows || macos)
-			args.push_back("--reset-config");
-			args.push_back("--reset-plugins-cache");
-			#elseif linux
-			final pluginsPath:String = Sys.getEnv('VLC_PLUGIN_PATH');
-
-			// Needs testing.
-			if (pluginsPath != null && pluginsPath.length > 0)
-				args.push_back("--reset-plugins-cache");
-			#end
-			args.push_back("--text-renderer=dummy");
-			args.push_back("--verbose=" + Define.getDefineInt('HXVLC_VERBOSE', 0));
-
-			instance = LibVLC.alloc(args.size(), untyped args.data());
-
-			if (instance == null)
-			{
-				final errmsg:String = cast(LibVLC.errmsg(), String);
-
-				if (errmsg != null && errmsg.length > 0)
-					Log.error('Failed to initialize the LibVLC instance, Error: $errmsg');
-				else
-					Log.error('Failed to initialize the LibVLC instance');
-
-				return false;
-			}
-			else
-			{
-				#if HXVLC_LOGGING
-				LibVLC.log_set(instance, untyped __cpp__('logging'), untyped __cpp__('NULL'));
-				#else
-				Log.info('LibVLC logging is being disabled');
-				#end
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Frees LibVLC instance.
-	 */
-	public static function disposeInstance():Void
-	{
-		if (instance != null)
-		{
-			#if HXVLC_LOGGING
-			LibVLC.log_unset(instance);
-			#end
-			LibVLC.release(instance);
-		}
-
-		instance = null;
 	}
 
 	// Get & Set Methods
@@ -793,8 +666,8 @@ class Video extends Bitmap
 		return value;
 	}
 
-	// Overrides
-	@:noCompletion private override function __enterFrame(deltaTime:Int):Void
+	// Private Methods
+	@:noCompletion private function this_onEnterFrame(event:openfl.events.Event):Void
 	{
 		if (!events.contains(true))
 			return;
@@ -917,6 +790,7 @@ class Video extends Bitmap
 		}
 	}
 
+	// Overrides
 	@:noCompletion private override function set_bitmapData(value:BitmapData):BitmapData
 	{
 		return __bitmapData = value;

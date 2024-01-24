@@ -44,7 +44,9 @@ class Main extends Sprite
 
 		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 
+		#if !linux
 		Lib.current.stage.frameRate = Lib.application.window.displayMode.refreshRate;
+		#end
 
 		#if linux
 		Lib.current.stage.frameRate = 60;
@@ -64,18 +66,22 @@ class Main extends Sprite
 		{
 			stage.removeEventListener(Event.ACTIVATE, stage_onActivate);
 			stage.removeEventListener(Event.DEACTIVATE, stage_onDeactivate);
-			stage.removeEventListener(Event.ENTER_FRAME, stage_onEnterFrame);
+
+			if (stage.hasEventListener(Event.ENTER_FRAME))
+				stage.removeEventListener(Event.ENTER_FRAME, stage_onEnterFrame);
 
 			video.dispose();
 
 			if (contains(video))
 				removeChild(video);
 		});
-		video.onFormatSetup.add(() -> stage.addEventListener(Event.ENTER_FRAME, stage_onEnterFrame));
+		video.onFormatSetup.add(function()
+		{
+			stage.addEventListener(Event.ENTER_FRAME, stage_onEnterFrame);
+		});
+		video.load(Path.join([Sys.getCwd(), 'assets/video.mp4']));
 		addChild(video);
 
-		// These must be called after the child is added (Mostly to have events accuracy).
-		video.load(Path.join([Sys.getCwd(), 'assets/video.mp4']), 2);
 		video.play();
 	}
 

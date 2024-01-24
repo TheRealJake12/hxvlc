@@ -32,10 +32,7 @@ class FlxVideoBackdrop extends FlxBackdrop
 	 * @param spacingY Amount of spacing between tiles on the Y axis.
 	 */
 	#if (flixel_addons >= "3.2.1")
-	public function new(repeatAxes = XY, spacingX = 0.0, spacingY = 0.0):Void
-	#else
-	public function new(repeatAxes = XY, spacingX = 0, spacingY = 0):Void
-	#end
+ 	public function new(repeatAxes = XY, spacingX = 0.0, spacingY = 0.0):Void
 	{
 		super(repeatAxes, spacingX, spacingY);
 
@@ -48,17 +45,31 @@ class FlxVideoBackdrop extends FlxBackdrop
 
 		FlxG.game.addChild(bitmap);
 	}
+	#else
+	public function new(repeatAxes = XY, spacingX = 0, spacingY = 0):Void
+	{
+		super(repeatAxes, spacingX, spacingY);
+
+		makeGraphic(1, 1, FlxColor.TRANSPARENT);
+
+		bitmap = new Video(false);
+		bitmap.onOpening.add(() -> bitmap.role = LibVLC_Role_Game);
+		bitmap.onFormatSetup.add(() -> loadGraphic(bitmap.bitmapData));
+		bitmap.alpha = 0;
+
+		FlxG.game.addChild(bitmap);
+	}
+	#end
 
 	/**
 	 * Call this function to load a video.
 	 *
 	 * @param location The local filesystem path or the media location url.
-	 * @param repeat The number of times the video should repeat itself.
 	 * @param options The additional options you can add to the LibVLC Media instance.
 	 *
 	 * @return `true` if the video loaded successfully or `false` if there's an error.
 	 */
-	public function load(location:String, repeat:UInt = 0, ?options:Array<String>):Bool
+	public function load(location:String, ?options:Array<String>):Bool
 	{
 		if (bitmap == null)
 			return false;
@@ -73,9 +84,9 @@ class FlxVideoBackdrop extends FlxBackdrop
 		}
 
 		if (FileSystem.exists(Path.join([Sys.getCwd(), location])))
-			return bitmap.load(Path.join([Sys.getCwd(), location]), repeat, options);
+			return bitmap.load(Path.join([Sys.getCwd(), location]), options);
 
-		return bitmap.load(location, repeat, options);
+		return bitmap.load(location, options);
 	}
 
 	/**

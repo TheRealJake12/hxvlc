@@ -4,7 +4,7 @@
 
 ![](https://img.shields.io/github/repo-size/MAJigsaw77/hxvlc) ![](https://badgen.net/github/open-issues/MAJigsaw77/hxvlc) ![](https://badgen.net/badge/license/MIT/green)
 
-A Haxe/[OpenFL](https://www.openfl.org) library for video playback using [LibVLC](https://www.videolan.org/vlc/libvlc.html).
+A Haxe/[OpenFL](https://www.openfl.org) library for @:native video playback using [LibVLC](https://www.videolan.org/vlc/libvlc.html).
 
 ## Supported platforms
 
@@ -12,9 +12,9 @@ A Haxe/[OpenFL](https://www.openfl.org) library for video playback using [LibVLC
 * MacOS **(x86_64 and arm64 only)**.
 * Linux.
 * Android **(arm64, armv7a, x86 and x86_64 only)**.
-* iOS **(arm64 and simulator only)** currently unstable.
+* iOS **(arm64 and simulator only)**.
 
-These platforms needs be to compiled to C++ using [Lime](https://lime.openfl.org) in order to work.
+These platforms needs be to compiled with C++ using [Lime](https://lime.openfl.org) in order to work.
 
 ## Instructions
 
@@ -77,15 +77,6 @@ Check out the [Samples Folder](samples/) for examples on how to use this library
 
 **hxvlc** is made available under the **MIT License**. Check [LICENSE](./LICENSE) for more information.
 
-![](https://github.com/videolan/vlc/raw/master/share/icons/256x256/vlc.png)
+![](https://images.videolan.org/images/goodies/Cone-Video-small.png)
 
 **LibVLC** is the engine of **VLC** released under the **LGPL2.1 License**. Check [VideoLAN.org](https://videolan.org/legal.html) for more information.
-
-## Credits
-
-| Avatar | User | Involvement |
-| ------ | ---- | ----------- |
-| ![](https://avatars.githubusercontent.com/u/77043862?s=64) | [MAJigsaw77](https://github.com/MAJigsaw77) | Creator of **hxvlc**.
-| ![](https://avatars.githubusercontent.com/u/1677550?s=64) | [datee](https://github.com/datee) | Creator of [HaxeVLC](https://github.com/datee/HaxeVLC) and [VLC.hx](https://github.com/LogicInteractive/VLC.hx).
-| ![](https://avatars.githubusercontent.com/u/107599365?v=64) | [Jonnycat](https://github.com/JonnycatMeow) | MacOS Libs.
-| ![](https://avatars.githubusercontent.com/u/103241885?s=64) | [FutureDorito](https://github.com/FutureDorito) | iOS Support Helper.
